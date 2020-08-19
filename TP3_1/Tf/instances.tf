@@ -35,6 +35,32 @@ resource "aws_security_group" "sg_tfinstance1" {
   }
 }
 
+resource "aws_security_group" "sg_wordpressinstance" {
+  name   = "sg_wordpressinstance"
+  vpc_id = aws_vpc.vpc_example.id
+  # en entrée
+  # autorise ssh de partout
+  ingress {
+    from_port   = "22"
+    to_port     = "22"
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  # autorise http de partout
+  ingress {
+    from_port   = "80"
+    to_port     = "80"
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  # autorise icmp (ping)
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "icmp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
 resource "aws_instance" "tfinstance1" {
   # Ubuntu 18.04 fournie par AWS
   ami                         = "ami-0bcc094591f354be2"
