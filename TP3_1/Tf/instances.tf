@@ -50,7 +50,24 @@ resource "aws_instance" "tfinstance1" {
   }
 }
 
+
+resource "aws_instance" "wordpressinstance" {
+  # Ubuntu 18.04 fournie par AWS
+  ami                         = "ami-0bcc094591f354be2"
+  instance_type               = "t2.micro"
+  key_name                    = "tfkeypair1"
+  vpc_security_group_ids      = [aws_security_group.sg_tfinstance1.id]
+  subnet_id                   = aws_subnet.subnet_example.id
+  private_ip                  = "10.42.1.10"
+  associate_public_ip_address = "true"
+  user_data                   = file("../Scripts/install_WP.sh")
+  tags = {
+    Name = "wordpressinstance"
+  }
+}
 output "tfinstance1_ip" {
   value = "${aws_instance.tfinstance1.*.public_ip}"
 }
-
+output "wordpressinstance_ip" {
+  value = "${aws_instance.wordpressinstance.*.public_ip}"
+}
