@@ -7,8 +7,8 @@ resource "aws_key_pair" "kp_instances" {
 }
 
 # Adapter le nom à l'usage
-resource "aws_security_group" "sg_tfinstance1" {
-  name   = "sg_tfinstance1"
+resource "aws_security_group" "nginx_inst" {
+  name   = "nginx_inst"
   vpc_id = aws_vpc.vpc_example.id
   # autorise http de partout
   # ce n'est qu'un example d'application possible
@@ -27,40 +27,21 @@ resource "aws_security_group" "sg_tfinstance1" {
   }
 }
 
-resource "aws_instance" "tfinstance1" {
+resource "aws_instance" "nginx_inst" {
   ami                         = var.amis[var.region] 
   instance_type               = var.instance_type
   key_name                    = "kp_instances"
   vpc_security_group_ids      = [ aws_security_group.sg_internal.id,
-                                  aws_security_group.sg_tfinstance1.id ]
+                                  aws_security_group.nginx_inst.id ]
   subnet_id                   = aws_subnet.subnet_example.id
   private_ip                  = var.first_instance_ip
   # si nécessaire, une ip publique
   associate_public_ip_address = "true"
-  user_data                   = file("../Scripts/instance_init1.sh")
+  user_data                   = file("../Scripts/instance_nginx.sh")
   tags = {
-    Name = "tfinstance1"
+    Name = "nginx_inst"
   }
 }
-
-resource "aws_instance" "node" {
-  count = var.node_count
-  ami                         = var.amis[var.region] 
-  instance_type               = var.node_type
-  key_name                    = "kp_instances"
-  vpc_security_group_ids      = [ aws_security_group.sg_internal.id ]
-  subnet_id                   = aws_subnet.subnet_example.id
-  private_ip                  = "${var.net_prefix}.${count.index + 100}"
-  # pas d'ip publique... généralement
-  associate_public_ip_address = "false"
-  # ou bien un init différent (dépend du style de cluster)
-  user_data                   = file("../Scripts/instance_init1.sh")
-  tags = {
-    Name = "node-${count.index + 1}"
-  }
-}
-
-
 
 output "tfinstance1_ip" {
   value = "${aws_instance.tfinstance1.*.public_ip}"
